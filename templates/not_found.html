@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="hero">
+  <p class="eyebrow">404</p>
+  <h1>That page is not here.</h1>
+  <p class="lede">
+    The link may be old, or the topic name may have a small typo in it. The full list of
+    topics is in the sidebar on the left, or you can start from the beginning.
+  </p>
+  <div class="hero-actions">
+    <a class="btn btn-primary" href="{{ url_for('home') }}">Go to the home page</a>
+    <a class="btn btn-ghost" href="{{ url_for('topic', slug='introduction') }}">Start learning</a>
+  </div>
+</section>
+
+{% endblock %}

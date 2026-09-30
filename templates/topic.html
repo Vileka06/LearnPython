@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+{% block content %}
+
+<article class="lesson">
+
+  <header class="lesson-head">
+    <p class="crumbs">
+      <a href="{{ url_for('home') }}">Home</a>
+      <span aria-hidden="true">/</span>
+      <span>{{ lesson.group }}</span>
+    </p>
+    <h1>{{ lesson.title }}</h1>
+    <p class="lesson-summary">{{ lesson.summary }}</p>
+    <p class="lesson-position">Topic {{ lesson.number }} of {{ total }}</p>
+  </header>
+
+  <section class="block" id="explain">
+    <h2 class="block-title">What this is about</h2>
+    {% for paragraph in lesson.intro %}
+      <p>{{ paragraph|safe }}</p>
+    {% endfor %}
+  </section>
+
+  {% if lesson.syntax %}
+    <section class="block" id="syntax">
+      <h2 class="block-title">Syntax</h2>
+      <p class="block-lead">This is the shape of the code you are about to write.</p>
+      <div class="codebox">
+        <div class="codebox-bar"><span>Syntax</span></div>
+        <pre class="code"><code data-code>{{ lesson.syntax }}</code></pre>
+      </div>
+    </section>
+  {% endif %}
+
+  <section class="block" id="examples">
+    <h2 class="block-title">Examples</h2>
+    {% for example in lesson.examples %}
+      <div class="example">
+        <h3 class="example-title">{{ loop.index }}. {{ example.title }}</h3>
+        <div class="codebox {% if example.terminal %}is-terminal{% endif %}">
+          <div class="codebox-bar">
+            <span>{{ "Your terminal" if example.terminal else example.title }}</span>
+            <button class="mini-btn js-copy" type="button">Copy</button>
+          </div>
+          <pre class="code"><code data-code>{{ example.code }}</code></pre>
+        </div>
+        <p class="output-label">{% if example.terminal %}What happens{% else %}Output{% endif %}</p>
+        <pre class="output"><code data-code>{{ example.output }}</code></pre>
+      </div>
+    {% endfor %}
+  </section>
+
+  <section class="block playground" id="playground">
+    <h2 class="block-title">Try it yourself</h2>
+    <p class="block-lead">Change the code however you like, then press Run.</p>
+    {% if lesson.starter %}
+      <p class="block-lead block-lead-note">The commands on this page run in your terminal, so the box
+        below starts with Python that shows the same idea from the inside.</p>
+    {% endif %}
+
+    <div class="editor" data-editor>
+      <div class="editor-bar">
+        <span class="editor-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="editor-name">your_code.py</span>
+        <span class="editor-spacer"></span>
+        <button class="mini-btn js-reset" type="button">Reset</button>
+        <button class="mini-btn js-copy" type="button">Copy</button>
+        <button class="run-btn js-run" type="button">
+          <span class="run-label">Run</span>
+        </button>
+      </div>
+
+      <div class="editor-body">
+        <div class="gutter" id="gutter" aria-hidden="true"></div>
+        <textarea class="editor-area" id="codeArea" spellcheck="false" autocomplete="off"
+                  autocapitalize="off" autocorrect="off" wrap="off"
+                  aria-label="Python code editor">{% if lesson.starter %}{{ lesson.starter }}
+{% else %}{% for example in lesson.examples %}{% if not example.terminal %}{{ example.code }}
+{% endif %}{% endfor %}{% endif %}</textarea>
+      </div>
+
+      <details class="stdin-box">
+        <summary>Sample input (only needed for <code>input()</code>)</summary>
+        <textarea class="stdin-area" id="stdinArea" spellcheck="false"
+                  placeholder="one answer per line, in the order the code asks"></textarea>
+      </details>
+    </div>
+
+    <div class="console" id="console" aria-live="polite">
+      <div class="console-bar">
+        <span>Output</span>
+        <span class="console-status" id="consoleStatus">ready</span>
+      </div>
+      <pre class="console-body" id="consoleBody">Press <strong>Run</strong> to see what your code prints.</pre>
+    </div>
+
+    <p class="key-hint">Tip: press <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to run.</p>
+  </section>
+
+  <section class="block practice" id="practice">
+    <h2 class="block-title">Small practice</h2>
+    <p class="question">{{ lesson.practice.question|safe }}</p>
+    {% if lesson.starter %}
+      <p class="block-lead block-lead-note">This task is done in your terminal, not in a Python file.</p>
+    {% endif %}
+
+    <details class="reveal">
+      <summary>Stuck? Show a hint</summary>
+      <p class="reveal-body">{{ lesson.practice.hint }}</p>
+    </details>
+
+    <details class="reveal">
+      <summary>Show the answer</summary>
+      <div class="codebox {% if lesson.starter %}is-terminal{% endif %}">
+        <div class="codebox-bar">
+          <span>{{ "Your terminal" if lesson.starter else "Answer" }}</span>
+        </div>
+        <pre class="code"><code data-code>{{ lesson.practice.answer }}</code></pre>
+      </div>
+    </details>
+  </section>
+
+  {% if quiz %}
+    <section class="block quiz" id="quiz" data-slug="{{ lesson.slug }}">
+      <h2 class="block-title">Quick check</h2>
+      <p class="block-lead">
+        Three questions on this topic. Answer them to bank the XP and unlock badges.
+        Your best score is kept, so have another go whenever you like.
+      </p>
+
+      <div class="quiz-body" id="quizBody" data-count="{{ quiz|length }}" hidden>
+        <p class="quiz-progress"><span id="quizStep">Question 1 of {{ quiz|length }}</span></p>
+        <ol class="quiz-list" id="quizList"></ol>
+        <button class="run-btn quiz-submit" id="quizSubmit" type="button" disabled>Check my answers</button>
+      </div>
+
+      <div class="quiz-result" id="quizResult" hidden>
+        <p class="quiz-score"><strong id="quizPercent">0%</strong><span id="quizDetail">0 of 0</span></p>
+        <p class="quiz-verdict" id="quizVerdict"></p>
+        <button class="mini-btn" id="quizAgain" type="button">Try again</button>
+      </div>
+
+      <p class="quiz-best" id="quizBest" hidden></p>
+    </section>
+  {% endif %}
+
+  <nav class="lesson-nav" aria-label="Move between topics">
+    {% if prev_topic %}
+      <a class="nav-card nav-prev" href="{{ url_for('topic', slug=prev_topic.slug) }}">
+        <span class="nav-dir">Previous</span>
+        <span class="nav-name">{{ prev_topic.title }}</span>
+      </a>
+    {% else %}
+      <a class="nav-card nav-prev is-disabled" href="{{ url_for('home') }}">
+        <span class="nav-dir">Previous</span>
+        <span class="nav-name">Back to the start</span>
+      </a>
+    {% endif %}
+
+    {% if next_topic %}
+      <a class="nav-card nav-next" href="{{ url_for('topic', slug=next_topic.slug) }}">
+        <span class="nav-dir">Next</span>
+        <span class="nav-name">{{ next_topic.title }}</span>
+      </a>
+    {% else %}
+      <a class="nav-card nav-next is-disabled" href="{{ url_for('home') }}">
+        <span class="nav-dir">Next</span>
+        <span class="nav-name">You reached the end &mdash; well done</span>
+      </a>
+    {% endif %}
+  </nav>
+
+  <button class="done-btn js-done" type="button" data-slug="{{ lesson.slug }}">
+    <span class="tick" aria-hidden="true"></span>
+    <span class="done-label">Mark this topic as done</span>
+  </button>
+
+</article>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/quiz.js') }}"></script>
+{% endblock %}

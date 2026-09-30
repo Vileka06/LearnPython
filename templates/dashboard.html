@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% block content %}
+
+<script type="application/json" id="dashData">{{ dash_data|tojson }}</script>
+
+<section class="dash-head">
+  <div>
+    <p class="eyebrow">Your dashboard</p>
+    <h1>Your progress</h1>
+    <p class="lede" id="dashSummary">Loading your progress&hellip;</p>
+  </div>
+  <div class="dash-head-actions">
+    <button class="btn btn-ghost" id="resetProgress" type="button">Reset progress</button>
+  </div>
+</section>
+
+<!-- ---------------------------------------------------- overall picture -->
+<section class="dash-top">
+
+  <div class="panel panel-ring">
+    <p class="panel-label">Overall</p>
+    <div class="ring-wrap">
+      <div class="ring" id="overallRing">
+        <svg viewBox="0 0 120 120" aria-hidden="true">
+          <circle class="ring-track" cx="60" cy="60" r="52"></circle>
+          <circle class="ring-bar" cx="60" cy="60" r="52" id="ringBar"></circle>
+        </svg>
+        <span class="ring-text">
+          <strong id="ringPercent">0%</strong>
+          <small id="ringSub">0 / {{ total }}</small>
+        </span>
+      </div>
+    </div>
+    <p class="ring-note" id="ringNote">Nothing finished yet. Start with the first topic.</p>
+  </div>
+
+  <div class="panel panel-rank">
+    <p class="panel-label">Rank</p>
+    <p class="rank-name" id="rankName">Newcomer</p>
+    <p class="rank-blurb" id="rankBlurb">You have opened the book.</p>
+
+    <div class="meter" role="img" aria-label="Progress to the next rank">
+      <span class="meter-fill" id="rankFill"></span>
+    </div>
+    <p class="rank-next" id="rankNext">Next rank: Explorer</p>
+
+    <ul class="xp-list">
+      <li><span class="xp-num" id="statXp">0</span><span class="xp-lab">XP earned</span></li>
+      <li><span class="xp-num" id="statStreak">0</span><span class="xp-lab">day streak</span></li>
+      <li><span class="xp-num" id="statRuns">0</span><span class="xp-lab">snippets run</span></li>
+      <li><span class="xp-num" id="statQuiz">0</span><span class="xp-lab">quizzes passed</span></li>
+    </ul>
+  </div>
+
+  <div class="panel panel-skill">
+    <p class="panel-label">Skill map</p>
+    <p class="panel-hint">How far through each area you are.</p>
+    <div class="skill-bars" id="skillBars"></div>
+  </div>
+
+</section>
+
+<!-- -------------------------------------------------------- up next -->
+<section class="dash-block">
+  <h2 class="dash-title">Up next</h2>
+  <p class="dash-lead">Picked from where you left off. Three small steps, no menus to hunt through.</p>
+  <div class="next-grid" id="nextGrid"></div>
+</section>
+
+<!-- --------------------------------------------------------- tracks -->
+<section class="dash-block">
+  <h2 class="dash-title">Your three paths</h2>
+  <p class="dash-lead">
+    Each path builds on the one before. The bars show finished topics; the darker
+    marker shows how many you have also passed the quick check on.
+  </p>
+  <div class="track-grid">
+    {% for track in tracks %}
+      <article class="track-card" data-track="{{ track.id }}">
+        <header class="track-head">
+          <div>
+            <h3 class="track-name">{{ track.name }}</h3>
+            <p class="track-tag">{{ track.tagline }}</p>
+          </div>
+          <span class="track-pct" data-role="pct">0%</span>
+        </header>
+
+        <p class="track-blurb">{{ track.blurb }}</p>
+
+        <div class="meter" aria-hidden="true">
+          <span class="meter-fill" data-role="fill"></span>
+          <span class="meter-mastery" data-role="mastery"></span>
+        </div>
+
+        <p class="track-count" data-role="count">0 of {{ track.slugs|length }} done</p>
+
+        <ol class="track-steps">
+          {% for slug in track.slugs %}
+            {% set topic = topics|selectattr('slug', 'equalto', slug)|first %}
+            {% if topic %}
+              <li>
+                <a class="track-step" href="{{ url_for('topic', slug=slug) }}" data-slug="{{ slug }}">
+                  <span class="tick" aria-hidden="true"></span>
+                  <span class="step-name">{{ topic.title }}</span>
+                  <span class="step-score" data-quiz-score="{{ slug }}" hidden></span>
+                </a>
+              </li>
+            {% endif %}
+          {% endfor %}
+        </ol>
+      </article>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- --------------------------------------------------------- badges -->
+<section class="dash-block">
+  <h2 class="dash-title">Badges</h2>
+  <p class="dash-lead">
+    <span id="badgeCount">0</span> of {{ badges|length }} earned.
+    Locked badges still tell you what to do next.
+  </p>
+  <div class="badge-grid" id="badgeGrid" data-total="{{ badges|length }}"></div>
+</section>
+
+<!-- -------------------------------------------------------- mastery -->
+<section class="dash-block">
+  <h2 class="dash-title">Where you are strongest</h2>
+  <p class="dash-lead">
+    Mastery counts a topic twice: once for finishing it, and once more for a
+    perfect score on its quick check.
+  </p>
+  <div class="mastery-grid" id="masteryGrid"></div>
+</section>
+
+<!-- ----------------------------------------------------- how it works -->
+<section class="dash-block">
+  <details class="how-how">
+    <summary>How the scoring works</summary>
+    <ul class="rule-list">
+      <li><strong>20 XP</strong> for marking a topic as done</li>
+      <li><strong>5 XP</strong> for running a snippet, once per topic each day</li>
+      <li><strong>30 XP</strong> for finishing a quick check, plus <strong>20 more</strong> for a perfect score</li>
+      <li><strong>10 XP</strong> for each day in a row that you learn</li>
+    </ul>
+    <p class="rule-foot">
+      Everything is stored in this browser only. Clearing your browser data, or
+      using a different browser or device, starts you from zero.
+    </p>
+  </details>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="hero">
+  <p class="eyebrow">Python for beginners</p>
+  <h1>Learn Python, one small step at a time.</h1>
+  <p class="lede">
+    {{ total }} short lessons. Each one explains a single idea, shows you a couple of
+    examples with the output, and gives you a code box to try it yourself. No setup,
+    no sign-up, nothing in your way.
+  </p>
+  <div class="hero-actions">
+    <a class="btn btn-primary" href="{{ url_for('topic', slug='introduction') }}">Start with the introduction</a>
+    <a class="btn btn-ghost" href="{{ url_for('topic', slug='variables') }}">Jump to Variables</a>
+  </div>
+  <p class="hero-progress">
+    <span id="doneCountHome">0</span> of {{ total }} topics finished &mdash; your progress is
+    saved in this browser only.
+  </p>
+</section>
+
+<section class="how">
+  <h2 class="how-title">How a lesson works</h2>
+  <ol class="how-steps">
+    <li>
+      <span class="step-num">1</span>
+      <h3>Read it</h3>
+      <p>One idea per lesson, in plain words, with the smallest example that works.</p>
+    </li>
+    <li>
+      <span class="step-num">2</span>
+      <h3>Run it</h3>
+      <p>Type in the code box, press Run, and see the real output straight away.</p>
+    </li>
+    <li>
+      <span class="step-num">3</span>
+      <h3>Answer the practice question</h3>
+      <p>A tiny task at the end. Get it wrong, press the hint, try again.</p>
+    </li>
+  </ol>
+</section>
+
+{% for group in groups %}
+  <section class="group-block">
+    <h2 class="group-title">{{ group.name }}</h2>
+    <div class="card-grid">
+      {% for item in group.topics %}
+        <a class="card" href="{{ url_for('topic', slug=item.slug) }}" data-slug="{{ item.slug }}">
+          <span class="card-top">
+            <span class="card-num">{{ '%02d'|format(item.number) }}</span>
+            <span class="tick" aria-hidden="true"></span>
+          </span>
+          <span class="card-title">{{ item.title }}</span>
+          <span class="card-text">{{ item.summary }}</span>
+        </a>
+      {% endfor %}
+    </div>
+  </section>
+{% endfor %}
+
+{% endblock %}

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% if page_title %}{{ page_title }} &middot; {% endif %}PySimple Learn</title>
+  <meta name="description" content="Learn Python from the beginning with short lessons, clear examples and a code editor you can run in your browser.">
+  <link rel="icon" href="{{ url_for('static', filename='img/favicon.svg') }}" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script>
+    // Set the saved theme before the page paints, so there is no white flash.
+    (function () {
+      try {
+        var saved = localStorage.getItem("pysimple-theme");
+        if (!saved) {
+          saved = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
+        document.documentElement.setAttribute("data-theme", saved);
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body>
+
+<header class="topbar">
+  <button class="icon-btn menu-btn" id="menuBtn" aria-label="Open the topic menu" aria-expanded="false" aria-controls="sidebar">
+    <span class="bars" aria-hidden="true"></span>
+  </button>
+
+  <a class="skip" href="#main">Skip to main content</a>
+
+  <a class="brand" href="{{ url_for('home') }}">
+    <span class="brand-mark" aria-hidden="true">&gt;_</span>
+    <span class="brand-text">PySimple <span class="brand-light">Learn</span></span>
+  </a>
+
+  <a class="toplink {% if request.endpoint == 'dashboard' %}is-current{% endif %}"
+     href="{{ url_for('dashboard') }}" id="dashLink">
+    Dashboard
+  </a>
+
+  <div class="topbar-search">
+    <label class="visually-hidden" for="topSearch">Search topics</label>
+    <input type="search" id="topSearch" placeholder="Search topics, like &quot;loop&quot;" autocomplete="off" spellcheck="false">
+    <span class="search-hint" aria-hidden="true">/</span>
+  </div>
+
+  <button class="icon-btn" id="themeBtn" aria-label="Switch between light and dark mode" title="Switch theme">
+    <span class="theme-icon" aria-hidden="true"></span>
+  </button>
+</header>
+
+<div class="progress-track" aria-hidden="true"><span class="progress-fill" id="progressFill"></span></div>
+
+<div class="layout">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-head">
+      <p class="sidebar-title">Topics</p>
+      <p class="sidebar-count"><span id="doneCount">0</span> of {{ total }} done</p>
+    </div>
+
+    <nav aria-label="Python topics">
+      {% for group in groups %}
+        <div class="nav-group">
+          <p class="nav-group-name">{{ group.name }}</p>
+          <ul class="nav-list">
+            {% for item in group.topics %}
+              <li>
+                <a class="nav-link {% if request.path == url_for('topic', slug=item.slug) %}is-current{% endif %}"
+                   href="{{ url_for('topic', slug=item.slug) }}"
+                   data-slug="{{ item.slug }}"
+                   data-title="{{ item.title }}"
+                   data-summary="{{ item.summary }}"
+                   data-group="{{ group.name }}">
+                  <span class="tick" aria-hidden="true"></span>
+                  <span class="nav-text">{{ item.title }}</span>
+                </a>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endfor %}
+
+      <p class="nav-empty" id="navEmpty" hidden>No topics match that search.</p>
+    </nav>
+  </aside>
+
+  <div class="backdrop" id="backdrop" hidden></div>
+
+  <main class="content" id="main">
+    {% block content %}{% endblock %}
+
+    <footer class="footer">
+      <p>PySimple Learn &mdash; built with Flask, HTML, CSS and a little JavaScript.</p>
+      <p class="footer-note">Every lesson is original and written to be read in a couple of minutes.</p>
+    </footer>
+  </main>
+
+</div>
+
+<script src="{{ url_for('static', filename='js/store.js') }}"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>
